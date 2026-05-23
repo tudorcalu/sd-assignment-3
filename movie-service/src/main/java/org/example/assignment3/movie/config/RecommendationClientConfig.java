@@ -1,0 +1,26 @@
+package org.example.assignment3.movie.config;
+
+import java.time.Duration;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestClient;
+
+@Configuration
+public class RecommendationClientConfig {
+
+    @Bean
+    public RestClient recommendationRestClient(
+            @Value("${services.recommendation.base-url}") String recommendationBaseUrl,
+            @Value("${services.recommendation.timeout-ms}") int timeoutMs) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofMillis(timeoutMs));
+        requestFactory.setReadTimeout(Duration.ofMillis(timeoutMs));
+
+        return RestClient.builder()
+                .baseUrl(recommendationBaseUrl)
+                .requestFactory(requestFactory)
+                .build();
+    }
+}

@@ -1,0 +1,17 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: movie-service
+
+services:
+  recommendation:
+    base-url: ${RECOMMENDATION_BASE_URL:http://localhost:8082}
+    timeout-ms: 1500
+
+circuit-breaker:
+  sliding-window-size: 4
+  minimum-number-of-calls: 2
+  failure-rate-threshold-percent: 50
+  wait-duration-in-open-state-ms: 3000
