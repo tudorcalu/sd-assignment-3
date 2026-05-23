@@ -1,0 +1,12 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: recommendation-service
+
+chaos:
+  mode: ${CHAOS_MODE:false}
+  failure-rate-percent: ${CHAOS_FAILURE_RATE_PERCENT:35}
+  min-latency-ms: 3000
+  max-latency-ms: 10000
