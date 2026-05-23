@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Assignment 3 — Movie demo</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0f1419;
+      --card: #1a2332;
+      --muted: #8b9aab;
+      --accent: #3d8bfd;
+      --ok: #3ecf8e;
+      --warn: #f0c14b;
+      --err: #ff6b6b;
+      font-family: system-ui, Segoe UI, Roboto, sans-serif;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(165deg, #0f1419 0%, #152238 100%);
+      color: #e8eef7;
+    }
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+    }
+    h1 {
+      font-weight: 650;
+      font-size: 1.45rem;
+      letter-spacing: -0.02em;
+      margin: 0 0 1rem;
+    }
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .tabs button {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: inherit;
+      font: inherit;
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .tabs button.active {
+      background: var(--accent);
+      border-color: transparent;
+      font-weight: 600;
+    }
+    .panel {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.25rem 1.35rem;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: none;
+    }
+    .panel.active {
+      display: block;
+    }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: flex-end;
+    }
+    select, button.action {
+      font: inherit;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 0.55rem 0.85rem;
+      background: rgba(255, 255, 255, 0.06);
+      color: inherit;
+    }
+    button.action {
+      background: var(--accent);
+      border-color: transparent;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.action:hover {
+      filter: brightness(1.08);
+    }
+    button.action:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    button.action.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .metric {
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.82rem;
+    }
+    .metric strong {
+      display: block;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: 0.15rem;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      margin-top: 0.75rem;
+    }
+    .badge.ok {
+      background: rgba(62, 207, 142, 0.18);
+      color: var(--ok);
+    }
+    .badge.warn {
+      background: rgba(240, 193, 75, 0.18);
+      color: var(--warn);
+    }
+    .badge.err {
+      background: rgba(255, 107, 107, 0.18);
+      color: var(--err);
+    }
+    .movie-title {
+      font-size: 1.35rem;
+      font-weight: 650;
+      margin: 1rem 0 0.35rem;
+    }
+    .movie-desc {
+      color: var(--muted);
+      line-height: 1.55;
+      margin: 0;
+    }
+    h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.65rem;
+      color: #cbd7e8;
+    }
+    ul.recs {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.65rem;
+    }
+    ul.recs li {
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    ul.recs li strong {
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+    ul.recs li span {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .err {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      background: rgba(255, 80, 80, 0.12);
+      border: 1px solid rgba(255, 80, 80, 0.35);
+      font-size: 0.9rem;
+    }
+    .log {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      font-family: ui-monospace, monospace;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 8px;
+      padding: 0.75rem;
+      max-height: 220px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: #b8c5d6;
+    }
+    code {
+      font-size: 0.85em;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 0.12rem 0.35rem;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Assignment 3 — resilience demo</h1>
+
+    <div class="tabs" role="tablist">
+      <button type="button" class="active" data-tab="page">Movie page</button>
+      <button type="button" data-tab="chaos">Chaos lab (Service B)</button>
+    </div>
+
+    <section id="panel-page" class="panel active" role="tabpanel">
+      <label for="movieId">Movie ID</label>
+      <div class="row">
+        <select id="movieId" aria-label="Movie id"></select>
+        <button type="button" class="action" id="loadBtn">Load movie page</button>
+        <button type="button" class="action secondary" id="burstBtn">Run 8 loads</button>
+      </div>
+      <div id="pageMetrics" class="metrics"></div>
+      <div id="status"></div>
+      <div id="out"></div>
+    </section>
+
+    <section id="panel-chaos" class="panel" role="tabpanel">
+      <label for="probeId">Movie ID</label>
+      <div class="row">
+        <select id="probeId" aria-label="Probe movie id"></select>
+        <button type="button" class="action" id="probeBtn">Probe once (20s max)</button>
+        <button type="button" class="action secondary" id="probeBurstBtn">Probe 10 times</button>
+      </div>
+      <div id="probeMetrics" class="metrics"></div>
+      <div id="probeStatus"></div>
+      <div id="probeLog" class="log"></div>
+    </section>
+  </div>
+
+  <script>
+    const ids = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
+    function fillSelect(selectEl) {
+      ids.forEach((id) => {
+        const o = document.createElement("option");
+        o.value = id;
+        o.textContent = id;
+        selectEl.appendChild(o);
+      });
+      selectEl.value = "1";
+    }
+
+    const sel = document.getElementById("movieId");
+    const probeSel = document.getElementById("probeId");
+    fillSelect(sel);
+    fillSelect(probeSel);
+
+    document.querySelectorAll(".tabs button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tabs button").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+      });
+    });
+
+    const loadBtn = document.getElementById("loadBtn");
+    const burstBtn = document.getElementById("burstBtn");
+    const out = document.getElementById("out");
+    const statusEl = document.getElementById("status");
+    const pageMetrics = document.getElementById("pageMetrics");
+
+    function badge(source) {
+      const isFallback = source === "fallback-trending";
+      const cls = isFallback ? "warn" : "ok";
+      const label = isFallback
+        ? "Graceful degradation — trending fallback"
+        : "Live recommendations from Service B";
+      return `<span class="badge ${cls}">${label}</span>`;
+    }
+
+    function renderMetrics(el, items) {
+      el.innerHTML = items
+        .map(([k, v]) => `<div class="metric"><strong>${k}</strong>${escapeHtml(String(v))}</div>`)
+        .join("");
+    }
+
+    async function loadMoviePage() {
+      const id = sel.value;
+      const start = performance.now();
+      const res = await fetch(`/api/movies/${encodeURIComponent(id)}/page`);
+      const ms = Math.round(performance.now() - start);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP ${res.status}: ${text}`);
+      }
+      const data = await res.json();
+      return { data, ms };
+    }
+
+    async function load() {
+      out.innerHTML = "";
+      statusEl.innerHTML = "";
+      pageMetrics.innerHTML = "";
+      loadBtn.disabled = true;
+      burstBtn.disabled = true;
+
+      try {
+        const { data, ms } = await loadMoviePage();
+        statusEl.innerHTML = badge(data.recommendationSource);
+        renderMetrics(pageMetrics, [
+          ["Response time", ms + " ms"],
+          ["HTTP status", "200"],
+          ["Source", data.recommendationSource],
+        ]);
+
+        const recs = (data.recommendedMovies || [])
+          .map(
+            (m) =>
+              `<li><strong>${escapeHtml(m.title)}</strong><span>${escapeHtml(m.description)}</span></li>`
+          )
+          .join("");
+
+        out.innerHTML = `
+          <p class="movie-title">${escapeHtml(data.movie.title)}</p>
+          <p class="movie-desc">${escapeHtml(data.movie.description)}</p>
+          <h2>Recommended</h2>
+          <ul class="recs">${recs}</ul>
+        `;
+      } catch (e) {
+        out.innerHTML = `<div class="err">${escapeHtml(String(e.message || e))}</div>`;
+      } finally {
+        loadBtn.disabled = false;
+        burstBtn.disabled = false;
+      }
+    }
+
+    async function burstMovieLoads() {
+      out.innerHTML = "";
+      statusEl.innerHTML = "";
+      pageMetrics.innerHTML = "";
+      loadBtn.disabled = true;
+      burstBtn.disabled = true;
+
+      let fallback = 0;
+      let live = 0;
+      const times = [];
+
+      try {
+        for (let i = 0; i < 8; i++) {
+          const { data, ms } = await loadMoviePage();
+          times.push(ms);
+          if (data.recommendationSource === "fallback-trending") fallback++;
+          else live++;
+        }
+        statusEl.innerHTML = `<span class="badge warn">Burst: ${fallback} fallback, ${live} live</span>`;
+        renderMetrics(pageMetrics, [
+          ["Avg response", Math.round(times.reduce((a, b) => a + b, 0) / times.length) + " ms"],
+          ["Fallback count", fallback + " / 8"],
+          ["Live count", live + " / 8"],
+        ]);
+        out.innerHTML = `<p class="movie-desc">Movie page stayed available on every request (no 500). Fallback proves timeout/circuit/fallback path.</p>`;
+      } catch (e) {
+        out.innerHTML = `<div class="err">${escapeHtml(String(e.message || e))}</div>`;
+      } finally {
+        loadBtn.disabled = false;
+        burstBtn.disabled = false;
+      }
+    }
+
+    const probeBtn = document.getElementById("probeBtn");
+    const probeBurstBtn = document.getElementById("probeBurstBtn");
+    const probeStatus = document.getElementById("probeStatus");
+    const probeMetrics = document.getElementById("probeMetrics");
+    const probeLog = document.getElementById("probeLog");
+
+    async function probeRecommendation() {
+      const id = probeSel.value;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+      const start = performance.now();
+      try {
+        const res = await fetch(`/api/recommendations/${encodeURIComponent(id)}`, {
+          signal: controller.signal,
+        });
+        const ms = Math.round(performance.now() - start);
+        const body = await res.text();
+        return { status: res.status, ms, body };
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    function probeBadge(status, ms) {
+      if (status === 503) {
+        return `<span class="badge err">HTTP 503 — chaos partial failure</span>`;
+      }
+      if (status === 200 && ms >= 3000) {
+        return `<span class="badge warn">HTTP 200 after ${ms}ms delay (chaos latency)</span>`;
+      }
+      if (status === 200 && ms < 500) {
+        return `<span class="badge ok">HTTP 200 fast — chaos likely OFF</span>`;
+      }
+      return `<span class="badge ok">HTTP ${status} in ${ms}ms</span>`;
+    }
+
+    async function runProbeOnce() {
+      probeLog.textContent = "Probing...\n";
+      probeStatus.innerHTML = "";
+      probeMetrics.innerHTML = "";
+      probeBtn.disabled = true;
+      probeBurstBtn.disabled = true;
+
+      try {
+        const { status, ms, body } = await probeRecommendation();
+        probeStatus.innerHTML = probeBadge(status, ms);
+        renderMetrics(probeMetrics, [
+          ["HTTP status", status],
+          ["Duration", ms + " ms"],
+          ["Body preview", body.slice(0, 120) + (body.length > 120 ? "…" : "")],
+        ]);
+        probeLog.textContent = `GET /api/recommendations/${probeSel.value}\nHTTP ${status} (${ms} ms)\n${body}\n`;
+      } catch (e) {
+        probeStatus.innerHTML = `<span class="badge err">Request failed</span>`;
+        probeLog.textContent = String(e.message || e);
+      } finally {
+        probeBtn.disabled = false;
+        probeBurstBtn.disabled = false;
+      }
+    }
+
+    async function runProbeBurst() {
+      probeLog.textContent = "";
+      probeStatus.innerHTML = "";
+      probeMetrics.innerHTML = "";
+      probeBtn.disabled = true;
+      probeBurstBtn.disabled = true;
+
+      let count503 = 0;
+      let count200 = 0;
+      let countOther = 0;
+      const durations = [];
+
+      try {
+        for (let i = 1; i <= 10; i++) {
+          const { status, ms, body } = await probeRecommendation();
+          durations.push(ms);
+          if (status === 503) count503++;
+          else if (status === 200) count200++;
+          else countOther++;
+          probeLog.textContent += `#${i}  HTTP ${status}  ${ms} ms  ${body.slice(0, 60)}\n`;
+        }
+        probeStatus.innerHTML = `<span class="badge warn">10 probes: ${count503}×503, ${count200}×200, ${countOther} other</span>`;
+        renderMetrics(probeMetrics, [
+          ["503 count", count503],
+          ["200 count", count200],
+          ["Avg duration", Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) + " ms"],
+          ["Min / max", Math.min(...durations) + " / " + Math.max(...durations) + " ms"],
+        ]);
+      } catch (e) {
+        probeLog.textContent += "\n" + (e.message || e);
+      } finally {
+        probeBtn.disabled = false;
+        probeBurstBtn.disabled = false;
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    loadBtn.addEventListener("click", load);
+    burstBtn.addEventListener("click", burstMovieLoads);
+    probeBtn.addEventListener("click", runProbeOnce);
+    probeBurstBtn.addEventListener("click", runProbeBurst);
+    load();
+  </script>
+</body>
+</html>
